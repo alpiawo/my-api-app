@@ -31,25 +31,26 @@ const SiswaHome = () => {
     loadData();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data) => {
     const { value: formValues } = await Swal.fire({
       title: "Tambah Data Siswa Baru",
       html: `
         <input id="swal-input1" class="swal2-input" placeholder="Nama Siswa">
         <input id="swal-input2" class="swal2-input" placeholder="NIS">
         <input id="swal-input3" class="swal2-input" placeholder="Alamat">
+        <select id="swal-input4" class="swal2-input">
+          <option value="">Pilih Kelas</option>
+          ${kelasOptions.map(option => `<option value="${option.id}" ${option.id === data.kelasId ? 'selected' : ''}>${option.nama}</option>`).join('')}
+        </select>
+        <select id="swal-input5" class="swal2-input">
+          <option value="">Pilih Pelanggaran</option>
+          ${peraturanOptions.map(option => `<option value="${option.id}" ${option.id === data.pelanggaranId ? 'selected' : ''}>${option.nama}</option>`).join('')}
+        </select>
+        <select id="swal-input6" class="swal2-input">
+          <option value="">Pilih Guru</option>
+          ${guruOptions.map(option => `<option value="${option.id}" ${option.id === data.guruPencatatId ? 'selected' : ''}>${option.nama}</option>`).join('')}
+        </select>
       `,
-      input: "select",
-      inputOptions: {
-        kelas: Object.fromEntries(kelasOptions.map(k => [k.id, k.nama])),
-        pelanggaran: Object.fromEntries(peraturanOptions.map(p => [p.id, p.nama])),
-        guru: Object.fromEntries(guruOptions.map(g => [g.id, g.nama])),
-      },
-      inputPlaceholder: {
-        kelas: "Pilih Kelas",
-        pelanggaran: "Pilih Pelanggaran",
-        guru: "Pilih Guru",
-      },
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: "Create",
@@ -57,9 +58,9 @@ const SiswaHome = () => {
         const nama = document.getElementById("swal-input1").value;
         const nis = document.getElementById("swal-input2").value;
         const alamat = document.getElementById("swal-input3").value;
-        const kelasId = Swal.getInput("kelas").value;
-        const pelanggaranId = Swal.getInput("pelanggaran").value;
-        const guruPencatatId = Swal.getInput("guru").value;
+        const kelasId = document.getElementById("swal-input4").value;
+        const pelanggaranId = document.getElementById("swal-input5").value;
+        const guruPencatatId = document.getElementById("swal-input6").value;
   
         if (!nama || !nis || !alamat || !kelasId || !pelanggaranId || !guruPencatatId) {
           Swal.showValidationMessage("Tolong isi semua field dengan benar!");

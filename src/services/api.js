@@ -143,7 +143,7 @@ export const deleteKelas = async (id) => {
 
 export const fetchPeraturan = async () => {
   try {
-    const response = await axios.get(API_URL)+'Peraturan';
+    const response = await axios.get(API_URL+'Peraturan');
     return response.data;
   } catch (error) {
     console.error("Error fetching peraturan:", error);

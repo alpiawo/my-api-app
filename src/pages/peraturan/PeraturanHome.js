@@ -1,50 +1,53 @@
 import React, { useEffect, useState } from "react";
 import { HiMiniPlus, HiMiniPencilSquare, HiMiniTrash } from "react-icons/hi2";
-import { fetchJurusan, deleteJurusan } from "../../services/api";
+import { fetchPeraturan, deletePeraturan } from "../../services/api";
 import DataTable from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { addJurusan, updateJurusan } from '../../services/api'
+import { addPeraturan, updatePeraturan } from '../../services/api'
 
-const Home = () => {
-  const [jurusan, setJurusan] = useState([]);
+const PeraturanHome = () => {
+  const [Peraturan, setPeraturan] = useState([]);
 
   useEffect(() => {
-    const loadJurusan = async () => {
-      console.log("Mulai mengambil data...");
+    const loadPeraturan = async () => {
       try {
-        const result = await fetchJurusan();
+        const result = await fetchPeraturan();
         console.log("Respons dari API:", result); 
-        setJurusan(result);
+        setPeraturan(result);
       } catch (error) {
         console.error("Terjadi kesalahan:", error);
       }
     };
-    loadJurusan();
+    loadPeraturan();
   }, []);
 
   const handleSubmit = async () => {
     const { value: formValues } = await Swal.fire({
-        title: "Add Data Jurusan Baru",
+        title: "Add Data Peraturan Baru",
         html: `
-            <input id="swal-input1" class="swal2-input" placeholder="Nama Jurusan">
+            <input id="swal-input1" class="swal2-input" placeholder="Nama Peraturan">
+            <input id="swal-input2" class="swal2-input" placeholder="Deskripsi Peraturan">
+            <input id="swal-input3" class="swal2-input" placeholder="Poin Peraturan">
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: "Create",
         preConfirm: () => {
             const nama = document.getElementById("swal-input1").value;
-            if (!nama) {
-                Swal.showValidationMessage("Tolong isi nama jurusan dengan benar!");
+            const deskripsi = document.getElementById("swal-input2").value;
+            const poin = document.getElementById("swal-input3").value;
+
+            if (!nama || !poin || !deskripsi) {
+                Swal.showValidationMessage("Tolong isi nama Peraturan dengan benar!");
             }
-            return {nama};
+            return {nama : nama, poin : poin, deskripsi : deskripsi};
         },
     });
 
     if (formValues) {
         try {
-            const response = await addJurusan(formValues);
-            setJurusan([...jurusan, response]);
+            const response = await addPeraturan(formValues);
+            setPeraturan([...Peraturan, response]);
             Swal.fire("Berhasil", "Data berhasil ditambahkan!");
             console.log("Response:", response);
         } catch (error) {
@@ -54,30 +57,34 @@ const Home = () => {
     }
 }
 
-const handleEdit = async (id, currentNama) => {
+const handleEdit = async (id, currentNama, currentDeskripsi, currentPoin) => {
   const { value: formValues } = await Swal.fire({
-      title: "Edit Data Jurusan",
+      title: "Edit Data Peraturan",
       html: `
-          <input id="swal-input1" class="swal2-input" value="${currentNama}" placeholder="Nama Jurusan">
+          <input id="swal-input1" class="swal2-input" value="${currentNama}" placeholder="Nama Peraturan">
+          <input id="swal-input2" class="swal2-input" value="${currentDeskripsi}" placeholder="Deskripssi Peraturan">
+          <input id="swal-input3" class="swal2-input" value="${currentPoin}" placeholder="Poin Peraturan">
       `,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: "Update",
       preConfirm: () => {
           const nama = document.getElementById("swal-input1").value;
-          if (!nama) {
-              Swal.showValidationMessage("Tolong isi nama jurusan dengan benar!");
+          const deskripsi = document.getElementById("swal-input2").value;
+          const poin = document.getElementById("swal-input3").value;
+          if (!nama || !deskripsi || !poin) {
+              Swal.showValidationMessage("Tolong isi data Peraturan dengan benar!");
           }
-          return { nama };
+          return { nama : nama, deskripsi : deskripsi, poin : poin};
       },
   });
 
   if (formValues) {
       try {
-          await updateJurusan(id, formValues);
-          setJurusan(
-              jurusan.map((item) => 
-                  item.id === id ? { ...item, nama: formValues.nama } : item
+          await updatePeraturan(id, formValues);
+          setPeraturan(
+              Peraturan.map((item) => 
+                  item.id === id ? { ...item, nama: formValues.nama, deskripsi: formValues.deskripsi, poin: formValues.poin } : item
               )
           );
           Swal.fire("Berhasil", "Data berhasil diperbarui!", "success");
@@ -100,8 +107,8 @@ const handleDelete = (id) => {
         confirmButtonText: 'Ya, Hapus data ini!'
     }).then((result) => {
         if (result.isConfirmed) {
-            deleteJurusan(id);
-            setJurusan(jurusan.filter((item) => item.id!== id));
+            deletePeraturan(id);
+            setPeraturan(Peraturan.filter((item) => item.id!== id));
 
             Swal.fire(
                 'Berhasil dihapus!',
@@ -116,10 +123,12 @@ const handleDelete = (id) => {
 
 const columns = [
     {name : 'Id', selector: (row) => row.id, sortable: true},
-    {name: 'Nama Jurusan', selector: (row) => row.nama, sortable: true},
+    {name: 'Nama Peraturan', selector: (row) => row.nama, sortable: true},
+    {name: 'Deskripsi Peraturan', selector: (row) => row.deskripsi, sortable: true},
+    {name: 'Poin Peraturan', selector: (row) => row.poin, sortable: true},
     {name: 'Actions', cell: (row) => (
         <div className="flex">
-            <button className="p-2 rounded-md bg-orange-400 shadow-sm mr-3 hover:bg-orange-500 hover:shadow-lg" onClick={() => handleEdit(row.id, row.nama)}>
+            <button className="p-2 rounded-md bg-orange-400 shadow-sm mr-3 hover:bg-orange-500 hover:shadow-lg" onClick={() => handleEdit(row.id, row.nama, row.deskripsi, row.poin)}>
                 <HiMiniPencilSquare />
             </button>
             <button className="p-2 rounded-md bg-red-400 shadow-md hover:bg-red-500 hover:shadow-lg" onClick={() => handleDelete(row.id)} >
@@ -132,15 +141,15 @@ const columns = [
   return (
     <div className="containe">
             <div className="mt-10 rounded-md shadow p-10">
-            <p className="text-center mb-10 text-3xl font-bold">Data Jurusan</p>
+            <p className="text-center mb-10 text-3xl font-bold">Data Peraturan</p>
             <button onClick={() => handleSubmit() } className="bg-emerald-600 mb-5 text-white flex justify-center items-center p-2 rounded-md">
-                <HiMiniPlus className="text-2xl"/> Add Jurusan
+                <HiMiniPlus className="text-2xl"/> Add Peraturan
             </button>
             <DataTable
                 className="rounded"
                 title="Karakter"
                 columns={columns}
-                data={jurusan}
+                data={Peraturan}
                 pagination
                 sortIcon={<span>&#9650;</span>}
                 />
@@ -149,4 +158,4 @@ const columns = [
   );
 };
 
-export default Home;
+export default PeraturanHome;
